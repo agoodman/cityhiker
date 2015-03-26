@@ -18,7 +18,7 @@ class GridRequest < ActiveRecord::Base
     osm = rsp.parsed_response['osm']
     if osm
       if osm['node']
-        osm['node'].each {|node| OpenStreetMap::Node.find_or_create_by(ref: node['id'], lat: node['lat'].to_f, lng: node['lon'].to_f)}
+        osm['node'].each {|node| OpenStreetMap::Node.find_or_create_by(ref: node['id'], lat: node['lat'].to_f, lng: node['lon'].to_f) rescue nil}
         new_ways = []
         if osm['way']
           osm['way'].select {|way| way['tag']!=nil && way['tag'].any? {|tag| tag['k']=='highway'} rescue false}.each {|way| new_ways.push OpenStreetMap::Way.create(ref: way['id'], nodes: way['nd'].map {|node| node['ref']}.join(','))}
