@@ -6,7 +6,7 @@ class RoadSegment < ActiveRecord::Base
     run = haversine(start_lat, start_lng, end_lat, end_lng)
     rise = end_alt - start_alt
     self.percent_grade = 100.0 * rise.to_f / run.to_f
-    self.save
+    self.save unless percent_grade.nan?
   end
   
   def haversine(lat1,lng1,lat2,lng2)
