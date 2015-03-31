@@ -21,8 +21,8 @@ CityHiker.initMap = function() {
 	$(document).keyup(function(event) {
 		if( event.which == 82 ) {
 			CityHiker.createGridRequests();
-		}else if( event.which >= 49 && event.which <= 52 ) {
-			CityHiker.filterLevel = event.which - 49; // level is [0,3]
+		}else if( event.which >= 49 && event.which <= 55 ) {
+			CityHiker.filterLevel = event.which - 49; // level is [0,6]
 			CityHiker.loadSegments();
 		}
 	});
