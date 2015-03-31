@@ -6,6 +6,7 @@ CityHiker.init = function() {
 	console.log("CityHiker.init");
 	CityHiker.gridRequests = [];
 	CityHiker.segments = [];
+	CityHiker.filterLevel = 0; // show everything
     google.maps.event.addDomListener(window, 'load', CityHiker.initMap);
 };
 CityHiker.initMap = function() {
@@ -20,6 +21,9 @@ CityHiker.initMap = function() {
 	$(document).keyup(function(event) {
 		if( event.which == 82 ) {
 			CityHiker.createGridRequests();
+		}else if( event.which >= 49 && event.which <= 52 ) {
+			CityHiker.filterLevel = event.which - 49; // level is [0,3]
+			CityHiker.loadSegments();
 		}
 	});
 };
@@ -112,6 +116,9 @@ CityHiker.loadSegments = function() {
 					},
 					end_lng: {
 						lt: ne.lng()
+					},
+					percent_grade: {
+						gt: CityHiker.filterLevel * 5
 					}
 				}
 			}
