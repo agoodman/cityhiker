@@ -1,28 +1,9 @@
-== README
+== City Hiker Maps API
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Adventure! Excitement! Or at least finding steep hills to walk up (or avoid)
 
-Things you may want to cover:
+This is the public repo for the City Hiker Maps API, available for general amusement at http://cityhiker.herokuapp.com
 
-* Ruby version
+Despite the hasty and very cowboy nature of this web UI, it surprisingly works on mobile. Maybe even a mobile app in the future.
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+Enjoy!
