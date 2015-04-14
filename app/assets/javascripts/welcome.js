@@ -8,6 +8,11 @@ CityHiker.init = function() {
 	CityHiker.segments = [];
 	CityHiker.filterLevel = 0; // show everything
     google.maps.event.addDomListener(window, 'load', CityHiker.initMap);
+
+	$('#button-plus').click(CityHiker.increaseFilterLevel);
+	$('#button-minus').click(CityHiker.decreaseFilterLevel);
+	$('#button-query').click(CityHiker.createGridRequests);
+	CityHiker.updateFilterLevel();
 };
 CityHiker.initMap = function() {
 	console.log("CityHiker.initMap");
@@ -43,6 +48,31 @@ CityHiker.gradeColor = function(grade) {
 };
 CityHiker.refreshMap = function() {
 	CityHiker.loadSegments();
+};
+CityHiker.increaseFilterLevel = function() {
+	CityHiker.filterLevel++;
+	if( CityHiker.filterLevel>6 ) {
+		CityHiker.filterLevel = 6;
+	}
+	CityHiker.updateFilterLevel();
+	CityHiker.refreshMap();
+};
+CityHiker.decreaseFilterLevel = function() {
+	CityHiker.filterLevel--;
+	if( CityHiker.filterLevel<0 ) {
+		CityHiker.filterLevel = 0;
+	}
+	CityHiker.updateFilterLevel();
+	CityHiker.refreshMap();
+};
+CityHiker.updateFilterLevel = function() {
+	var val;
+	if( CityHiker.filterLevel==0 ) {
+		val = "0%";
+	}else{
+		val = (CityHiker.filterLevel*5)+"%";
+	}
+	$('#filter-level').html(val);
 };
 CityHiker.createGridRequests = function() {
 	var bounds = CityHiker.map.getBounds();

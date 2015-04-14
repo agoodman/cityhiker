@@ -9,3 +9,29 @@ html, body, #mapPanel {
 	margin: 0;
 	padding: 0;
 }
+
+#button-bar {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 50px;
+	background-color: white;
+	
+	div {
+		box-sizing: border-box;
+		height: 50px;
+		min-width: 50px;
+		float: left;
+		text-align: center;
+		line-height: 50px;
+		&.button {
+			cursor: pointer;
+		
+			&:hover {
+				background-color: gray;
+				color: white;
+			}
+		}
+	}
+}
