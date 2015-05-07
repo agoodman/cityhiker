@@ -1,41 +1,35 @@
 // Place all the behaviors and hooks related to the matching controller here.
 // All this logic will automatically be available in application.js.
 
-var CityHiker = {};
-CityHiker.init = function() {
-	console.log("CityHiker.init");
-	CityHiker.gridRequests = [];
-	CityHiker.segments = [];
-	CityHiker.filterLevel = 0; // show everything
-    google.maps.event.addDomListener(window, 'load', CityHiker.initMap);
+var base = {};
+base.init = function() {
+	console.log("base.init");
+	base.gridRequests = {};
+	base.gridRequestIds = [];
+	base.overlays = {};
+	base.segments = [];
+	base.filterLevel = 0; // show everything
+    google.maps.event.addDomListener(window, 'load', base.initMap);
 
-	$('#button-plus').click(CityHiker.increaseFilterLevel);
-	$('#button-minus').click(CityHiker.decreaseFilterLevel);
-	$('#button-query').click(CityHiker.createGridRequests);
-	CityHiker.updateFilterLevel();
+	$('#button-plus').click(base.increaseFilterLevel);
+	$('#button-minus').click(base.decreaseFilterLevel);
+	$('#button-query').click(base.createGridRequests);
+	base.updateFilterLevel();
 };
-CityHiker.initMap = function() {
-	console.log("CityHiker.initMap");
+base.initMap = function() {
+	console.log("base.initMap");
 	var mapOptions = {
 		center: new google.maps.LatLng(37.795,-122.415),
 		zoom: 14
 	};
-	CityHiker.map = new google.maps.Map(document.getElementById('mapPanel'), mapOptions);
-	google.maps.event.addListener(CityHiker.map, 'mouseup', CityHiker.refreshMap);
-	google.maps.event.addListener(CityHiker.map, 'zoom_changed', CityHiker.refreshMap);
-	$(document).keyup(function(event) {
-		if( event.which == 82 ) {
-			CityHiker.createGridRequests();
-		}else if( event.which >= 49 && event.which <= 55 ) {
-			CityHiker.filterLevel = event.which - 49; // level is [0,6]
-			CityHiker.loadSegments();
-		}
-	});
+	base.map = new google.maps.Map(document.getElementById('mapPanel'), mapOptions);
+	google.maps.event.addListener(base.map, 'mouseup', base.refreshMap);
+	google.maps.event.addListener(base.map, 'zoom_changed', base.refreshMap);
 };
-CityHiker.nearest = function(val) {
+base.nearest = function(val) {
 	return val - (val % 5);
 };
-CityHiker.gradeColor = function(grade) {
+base.gradeColor = function(grade) {
 	if( Math.abs(grade) < 2 ) {
 		return "#00ff00";
 	}else if( Math.abs(grade) < 10 ) {
@@ -46,66 +40,50 @@ CityHiker.gradeColor = function(grade) {
 		return "#ff0000";
 	}
 };
-CityHiker.refreshMap = function() {
-	CityHiker.loadSegments();
+base.refreshMap = function() {
+	base.loadSegments();
 };
-CityHiker.increaseFilterLevel = function() {
-	CityHiker.filterLevel++;
-	if( CityHiker.filterLevel>6 ) {
-		CityHiker.filterLevel = 6;
+base.increaseFilterLevel = function() {
+	base.filterLevel++;
+	if( base.filterLevel>6 ) {
+		base.filterLevel = 6;
 	}
-	CityHiker.updateFilterLevel();
-	CityHiker.refreshMap();
+	base.updateFilterLevel();
+	base.refreshMap();
 };
-CityHiker.decreaseFilterLevel = function() {
-	CityHiker.filterLevel--;
-	if( CityHiker.filterLevel<0 ) {
-		CityHiker.filterLevel = 0;
+base.decreaseFilterLevel = function() {
+	base.filterLevel--;
+	if( base.filterLevel<0 ) {
+		base.filterLevel = 0;
 	}
-	CityHiker.updateFilterLevel();
-	CityHiker.refreshMap();
+	base.updateFilterLevel();
+	base.refreshMap();
 };
-CityHiker.updateFilterLevel = function() {
+base.updateFilterLevel = function() {
 	var val;
-	if( CityHiker.filterLevel==0 ) {
+	if( base.filterLevel==0 ) {
 		val = "0%";
 	}else{
-		val = (CityHiker.filterLevel*5)+"%";
+		val = (base.filterLevel*5)+"%";
 	}
 	$('#filter-level').html(val);
 };
-CityHiker.createGridRequests = function() {
-	var bounds = CityHiker.map.getBounds();
+base.createGridRequests = function() {
+	var bounds = base.map.getBounds();
 	var ne = bounds.getNorthEast();
 	var sw = bounds.getSouthWest();
 	console.log("CityHiker.refreshMap("+sw.lat()+","+sw.lng()+","+ne.lat()+","+ne.lng()+")");
-	var minlat = CityHiker.nearest(Math.floor(sw.lat() * 1e3)) * 100;
-	var minlng = CityHiker.nearest(Math.floor(sw.lng() * 1e3)) * 100;
-	var maxlat = CityHiker.nearest(Math.floor(ne.lat() * 1e3)) * 100;
-	var maxlng = CityHiker.nearest(Math.floor(ne.lng() * 1e3)) * 100;
+	var minlat = base.nearest(Math.floor(sw.lat() * 1e3)) * 100;
+	var minlng = base.nearest(Math.floor(sw.lng() * 1e3)) * 100;
+	var maxlat = base.nearest(Math.floor(ne.lat() * 1e3)) * 100;
+	var maxlng = base.nearest(Math.floor(ne.lng() * 1e3)) * 100;
 	var gridh = (maxlat - minlat) / 500;
 	var gridw = (maxlng - minlng) / 500;
 	console.log("grid: "+minlat+","+minlng+" - "+maxlat+","+maxlng+" ("+gridw+","+gridh+")");
-	if( CityHiker.overlays && CityHiker.overlays.length>0 ) {
-		for (var k=0;k<CityHiker.overlays.length;k++) {
-			CityHiker.overlays[k].setMap(null);
-		}
-	}
-	CityHiker.overlays = [];
 	for (var i=0;i<gridw;i++) {
 		for (var j=0;j<gridh;j++) {
-			var rect = new google.maps.Rectangle({
-				strokeOpacity: 0,
-				fillColor: '#ff0000',
-				fillOpacity: 0.25,
-				map: CityHiker.map,
-				bounds: new google.maps.LatLngBounds(
-					new google.maps.LatLng((minlat+j*500)/1e5, (minlng+i*500)/1e5),
-					new google.maps.LatLng((minlat+(j+1)*500)/1e5, (minlng+(i+1)*500)/1e5)
-				)
-			});
-			CityHiker.overlays.push(rect);
 			$.ajax({
+				async: false,
 				url: "/grid_requests.json",
 				type: "POST",
 				data: {
@@ -115,20 +93,115 @@ CityHiker.createGridRequests = function() {
 					max_lng: minlng + (i+1)*500
 				},
 				success: function(xhr,msg,data) {
-					console.log("created grid request: "+JSON.stringify(data));
+					var raw = data.responseText;
+					var req = JSON.parse(raw);
+					if( req.completed_at == null ) {
+						base.gridRequests[req.id] = req;
+						base.gridRequestIds.push(req.id);
+						console.log("created grid request: "+req.id);
+					}
 				}
-			})
+			});
+			base.startWatchingGridStatus();
 		}
 	}
 };
-CityHiker.loadSegments = function() {
-	var bounds = CityHiker.map.getBounds();
+base.startWatchingGridStatus = function() {
+	if( !base.isWatching ) {
+		console.log("CityHiker.startWatching");
+		base.isWatching = true;
+		base.checkGridStatus();
+	}
+};
+base.stopWatchingGridStatus = function() {
+	if( base.isWatching ) {
+		console.log("CityHiker.stopWatching");
+		base.isWatching = false;
+	}
+};
+base.checkGridStatus = function() {
+	$.ajax({
+		async: false,
+		url: "/grid_requests.json",
+		success: function(xhr,msg,data) {
+			var raw = data.responseText;
+			var reqs = JSON.parse(raw);
+			if( reqs.length == 0 ) {
+				for (var k=0;k<base.gridRequestIds.length;k++) {
+					var req = base.gridRequests[base.gridRequestIds[k]];
+					req.completed_at = 1;
+					base.updateGridOverlay(req);
+				}
+				base.stopWatchingGridStatus();
+			}else{
+				var pendingIds = [];
+				for (var k=0;k<reqs.length;k++) {
+					base.updateGridOverlay(reqs[k]);
+					pendingIds.push(reqs[k].id);
+				}
+				var completedIds = [];
+				for (var k=0;k<base.gridRequestIds.length;k++) {
+					var found = false;
+					for (var n=0;n<pendingIds.length;n++) {
+						if( pendingIds[n] == base.gridRequestIds[k] ) {
+							found = true;
+							break;
+						}
+					}
+					if( found == false ) {
+						completedIds.push(base.gridRequestIds[k]);
+					}
+				}
+				for (var k=0;k<completedIds.length;k++) {
+					for (var n=0;n<base.gridRequestIds.length;n++) {
+						if( base.gridRequestIds[n] == completedIds[k] ) {
+							var req = base.gridRequests[base.gridRequestIds[n]];
+							req.completed_at = 1;
+							base.updateGridOverlay(req);
+							base.gridRequestIds = base.gridRequestIds.splice(n, 1);
+							break;
+						}
+					}
+				}
+				console.log("CityHiker.gridStatus: "+reqs.length);
+				if( base.isWatching ) {
+					setTimeout(base.checkGridStatus, 10000);
+				}
+			}
+		}
+	});
+};
+base.updateGridOverlay = function(req) {
+	console.log("CityHiker.updateOverlay: "+JSON.stringify(req.id)+" completed at "+req.completed_at);
+	if( req.completed_at == null ) {
+		if( base.overlays[req.id] == null ) {
+			var rect = new google.maps.Rectangle({
+				strokeOpacity: 0,
+				fillColor: '#ff0000',
+				fillOpacity: 0.25,
+				map: base.map,
+				bounds: new google.maps.LatLngBounds(
+					new google.maps.LatLng(req.min_lat/1e5, req.min_lng/1e5),
+					new google.maps.LatLng(req.max_lat/1e5, req.max_lng/1e5)
+				)
+			});
+			base.overlays[req.id] = rect;
+		}
+	}else{
+		if( base.overlays[req.id] != null ) {
+			base.overlays[req.id].setMap(null);
+			base.overlays[req.id] = null;
+		}
+	}
+};
+base.loadSegments = function() {
+	var bounds = base.map.getBounds();
 	var ne = bounds.getNorthEast();
 	var sw = bounds.getSouthWest();
-	for (var k=0;k<CityHiker.segments.length;k++) {
-		CityHiker.segments[k].setMap(null);
+	for (var k=0;k<base.segments.length;k++) {
+		base.segments[k].setMap(null);
 	}
-	CityHiker.segments = [];
+	base.segments = [];
 	$.ajax({
 		url: "/road_segments.json",
 		type: "GET",
@@ -148,7 +221,7 @@ CityHiker.loadSegments = function() {
 						lt: ne.lng()
 					},
 					percent_grade: {
-						gt: CityHiker.filterLevel * 5
+						gt: base.filterLevel * 5
 					}
 				}
 			}
@@ -163,13 +236,14 @@ CityHiker.loadSegments = function() {
 						new google.maps.LatLng(segments[k].start_lat, segments[k].start_lng),
 						new google.maps.LatLng(segments[k].end_lat, segments[k].end_lng)
 					],
-					strokeColor: CityHiker.gradeColor(segments[k].percent_grade),
+					strokeColor: base.gradeColor(segments[k].percent_grade),
 					strokeWeight: 4
 				});
-				line.setMap(CityHiker.map);
-				CityHiker.segments.push(line);
+				line.setMap(base.map);
+				base.segments.push(line);
 			}
 		}
 	});
 };
+var CityHiker = base;
 $(CityHiker.init);

@@ -1,10 +1,15 @@
 class GridRequestsController < ApplicationController
   
-  respond_to :json
+  include Serviceable
   
-  def create
-    @grid_request = GridRequest.find_or_create_by(min_lat: params[:min_lat], min_lng: params[:min_lng], max_lat: params[:max_lat], max_lng: params[:max_lng])
-    respond_with(@grid_request)
+  acts_as_service :grid_request
+  
+  def assign_new_instance
+    @instance = GridRequest.find_or_create_by(min_lat: params[:min_lat], min_lng: params[:min_lng], max_lat: params[:max_lat], max_lng: params[:max_lng])
+  end
+  
+  def assign_collection
+    @collection = GridRequest.pending
   end
   
 end
