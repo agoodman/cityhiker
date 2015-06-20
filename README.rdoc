@@ -7,3 +7,14 @@ This is the public repo for the City Hiker Maps API, available for general amuse
 Despite the hasty and very cowboy nature of this web UI, it surprisingly works on mobile. Maybe even a mobile app in the future.
 
 Enjoy!
+
+
+=== Endpoints
+
+* Differential
+
+GET /differential/search?start=lat,lng&end=lat,lng
+{"alt_delta": 7.890, "distance": 200.65}
+
+alt_delta - altitude difference in meters between the given coordinates
+distance - horizontal distance in meters between the given coordinates
