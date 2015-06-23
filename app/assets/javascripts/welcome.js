@@ -1,6 +1,31 @@
 // Place all the behaviors and hooks related to the matching controller here.
 // All this logic will automatically be available in application.js.
 
+var TILE_SIZE = 256;
+function degreesToRadians(deg) {
+  return deg * (Math.PI / 180);
+}
+
+function radiansToDegrees(rad) {
+  return rad / (Math.PI / 180);
+}
+MercatorProjection = function() {
+  this.pixelOrigin_ = new google.maps.Point(TILE_SIZE / 2,
+      TILE_SIZE / 2);
+  this.pixelsPerLonDegree_ = TILE_SIZE / 360;
+  this.pixelsPerLonRadian_ = TILE_SIZE / (2 * Math.PI);
+};
+
+MercatorProjection.prototype.fromPointToLatLng = function(point) {
+  var me = this;
+  var origin = me.pixelOrigin_;
+  var lng = (point.x - origin.x) / me.pixelsPerLonDegree_;
+  var latRadians = (point.y - origin.y) / -me.pixelsPerLonRadian_;
+  var lat = radiansToDegrees(2 * Math.atan(Math.exp(latRadians)) -
+      Math.PI / 2);
+  return new google.maps.LatLng(lat, lng);
+};
+
 var base = {};
 base.init = function() {
 	console.log("base.init");
@@ -9,11 +34,20 @@ base.init = function() {
 	base.overlays = {};
 	base.segments = [];
 	base.filterLevel = 0; // show everything
-    google.maps.event.addDomListener(window, 'load', base.initMap);
+	
+	base.diffToolEnabled = false;
+	base.hasDiffStart = false;
+	base.hasDiffEnd = false;
+	base.diffOverlay = null;
+
+  base.projection = new MercatorProjection();
+  
+  google.maps.event.addDomListener(window, 'load', base.initMap);
 
 	$('#button-plus').click(base.increaseFilterLevel);
 	$('#button-minus').click(base.decreaseFilterLevel);
 	$('#button-query').click(base.createGridRequests);
+	$('#button-diff, #button-diff-done').click(base.toggleDiffTool);
 	base.updateFilterLevel();
 };
 base.initMap = function() {
@@ -23,6 +57,7 @@ base.initMap = function() {
 		zoom: 14
 	};
 	base.map = new google.maps.Map(document.getElementById('mapPanel'), mapOptions);
+  google.maps.event.addListener(base.map, 'click', base.diffClick);
 	google.maps.event.addListener(base.map, 'mouseup', base.refreshMap);
 	google.maps.event.addListener(base.map, 'zoom_changed', base.refreshMap);
 };
@@ -41,7 +76,11 @@ base.gradeColor = function(grade) {
 	}
 };
 base.refreshMap = function() {
-	base.loadSegments();
+  if( !base.diffToolEnabled ) {
+	  base.loadSegments();
+  }else{
+    base.clearSegments();
+  }
 };
 base.increaseFilterLevel = function() {
 	base.filterLevel++;
@@ -194,14 +233,17 @@ base.updateGridOverlay = function(req) {
 		}
 	}
 };
-base.loadSegments = function() {
-	var bounds = base.map.getBounds();
-	var ne = bounds.getNorthEast();
-	var sw = bounds.getSouthWest();
+base.clearSegments = function() {
 	for (var k=0;k<base.segments.length;k++) {
 		base.segments[k].setMap(null);
 	}
 	base.segments = [];
+};
+base.loadSegments = function() {
+	var bounds = base.map.getBounds();
+	var ne = bounds.getNorthEast();
+	var sw = bounds.getSouthWest();
+	base.clearSegments();
 	$.ajax({
 		url: "/road_segments.json",
 		type: "GET",
@@ -244,6 +286,65 @@ base.loadSegments = function() {
 			}
 		}
 	});
+};
+base.toggleDiffTool = function() {
+  base.diffToolEnabled = !base.diffToolEnabled;
+  if( base.diffToolEnabled ) {
+    base.clearSegments();
+    $('#button-bar').hide();
+    $('#diff-tool .label').html(null);
+    $('#diff-tool').show();
+    console.log("CityHiker.diff ON");
+  }else{
+    $('#button-bar').show();
+    $('#diff-tool').hide();
+    base.diffOverlay.setMap(null);
+    base.diffOverlay = null;
+    console.log("CityHiker.diff OFF");
+  }
+};
+base.diffClick = function(e) {
+  if( !base.diffToolEnabled ) {
+    return;
+  }
+  
+  if( base.hasDiffStart && !base.hasDiffEnd ) {
+    base.hasDiffEnd = true;
+    base.diffEnd = e.latLng;
+    console.log("end: "+e.latLng.lat()+","+e.latLng.lng());
+    $('#diff-tool > .end-lat').html(e.latLng.lat().toFixed(5));
+    $('#diff-tool > .end-lng').html(e.latLng.lng().toFixed(5));
+    base.diffOverlay = new google.maps.Polyline({
+      map: base.map,
+      path: [
+				new google.maps.LatLng(base.diffStart.lat(), base.diffStart.lng()),
+				new google.maps.LatLng(base.diffEnd.lat(), base.diffEnd.lng())
+			],
+			strokeColor: "#ff0000",
+			strokeWeight: 4
+    });
+    $.ajax({
+      url: "/differential/search",
+      data: {
+        start: base.diffStart.lat().toFixed(5) + "," + base.diffStart.lng().toFixed(5),
+        end: base.diffEnd.lat().toFixed(5) + "," + base.diffEnd.lng().toFixed(5)
+      },
+      success: function(xhr,msg,data) {
+        var result = JSON.parse(data.responseText);
+  			console.log("delta_alt: "+result.elevation_delta);
+  			console.log("distance: "+result.distance);
+  			$("#diff-tool > .diff-alt").html(result.elevation_delta.toFixed(1));
+  			$("#diff-tool > .distance").html(result.distance.toFixed(1));
+      }
+    })
+  }else{
+    base.hasDiffStart = true;
+    base.hasDiffEnd = false;
+    base.diffStart = e.latLng;
+    console.log("start: "+e.latLng.lat()+","+e.latLng.lng());
+    $('#diff-tool > .start-lat').html(e.latLng.lat().toFixed(5));
+    $('#diff-tool > .start-lng').html(e.latLng.lng().toFixed(5));
+  }
 };
 var CityHiker = base;
 $(CityHiker.init);

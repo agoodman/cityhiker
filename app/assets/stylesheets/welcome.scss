@@ -10,7 +10,11 @@ html, body, #mapPanel {
 	padding: 0;
 }
 
-#button-bar {
+#mapPanel {
+	bottom: 50px;
+}
+
+#button-bar, #diff-tool {
 	position: absolute;
 	bottom: 0;
 	left: 0;

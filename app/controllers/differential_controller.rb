@@ -29,7 +29,7 @@ class DifferentialController < ApplicationController
     end
     
     if success
-      render text: {elevation_delta: alt_delta, distance: distance}.as_json
+      render text: {elevation_delta: alt_delta, distance: distance}.to_json
     else
       head :bad_request
     end
