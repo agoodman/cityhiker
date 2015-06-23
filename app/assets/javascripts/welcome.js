@@ -298,8 +298,10 @@ base.toggleDiffTool = function() {
   }else{
     $('#button-bar').show();
     $('#diff-tool').hide();
-    base.diffOverlay.setMap(null);
-    base.diffOverlay = null;
+    if( base.diffOverlay !=null ) {
+      base.diffOverlay.setMap(null);
+      base.diffOverlay = null;
+    }
     console.log("CityHiker.diff OFF");
   }
 };
@@ -344,6 +346,10 @@ base.diffClick = function(e) {
     console.log("start: "+e.latLng.lat()+","+e.latLng.lng());
     $('#diff-tool > .start-lat').html(e.latLng.lat().toFixed(5));
     $('#diff-tool > .start-lng').html(e.latLng.lng().toFixed(5));
+    if( base.diffOverlay != null ) {
+      base.diffOverlay.setMap(null);
+      base.diffOverlay = null;
+    }
   }
 };
 var CityHiker = base;
