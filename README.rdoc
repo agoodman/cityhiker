@@ -7,3 +7,41 @@ This is the public repo for the City Hiker Maps API, available for general amuse
 Despite the hasty and very cowboy nature of this web UI, it surprisingly works on mobile. Maybe even a mobile app in the future.
 
 Enjoy!
+
+
+== Endpoints
+
+=== Differential
+
+GET /differential/search?start=lat,lng&end=lat,lng
+{"alt_delta": 7.890, "distance": 200.65}
+
+alt_delta - altitude difference in meters between the given coordinates
+distance - horizontal distance in meters between the given coordinates
+
+=== Road Segments
+
+GET /road_segments?<options as follows>
+
+  where: {
+    road_segments: {
+      start_lat: {
+        gt: 38.84,
+        lt: 38.85
+      },
+      start_lng: {
+        gt: -122.42,
+        lt: -122.41
+      },
+      end_lat: {
+        gt: 38.84,
+        lt: 38.85
+      },
+      end_lng: {
+        gt: -122.42,
+        lt: -122.41
+      }
+    }
+  }
+
+Returns a set of road segments in the bounding box [38.84,-122.42,38.85,-122.41], up to a limit of 1000 per request.
