@@ -16,3 +16,9 @@ gem 'haml'
 gem 'responders'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
+gem 'newrelic_rpm'
+gem 'dalli'
+
+group :test do
+  gem 'sqlite3'
+end

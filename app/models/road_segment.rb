@@ -13,6 +13,59 @@ class RoadSegment < ActiveRecord::Base
     return Math.haversine(start_lat, start_lng, end_lat, end_lng)
   end
   
+  def generate_hecto_key
+    encoded_lat = RoadSegment.float_to_base64(start_lat, 1000)
+    encoded_lng = RoadSegment.float_to_base64(start_lng, 1000)
+    self.hecto_key = encoded_lat + encoded_lng
+  end
+
+  def as_base64
+    lat0 = RoadSegment.float_to_base64(start_lat, 100000)
+    lng0 = RoadSegment.float_to_base64(start_lng, 100000)
+    alt0 = RoadSegment.float_to_base64(start_alt, 100000)
+    lat1 = RoadSegment.float_to_base64(end_lat, 100000)
+    lng1 = RoadSegment.float_to_base64(end_lng, 100000)
+    alt1 = RoadSegment.float_to_base64(end_alt, 100000)
+    grade = RoadSegment.float_to_base64(percent_grade, 100000)
+    guid = RoadSegment.float_to_base64(id, 1)
+    lat0 + lng0 + alt0 + lat1 + lng1 + alt1 + grade + guid
+  end
+  
+  def self.float_to_base64(value, factor)
+    int26_to_base64(float_to_int26(value, factor))
+  end
+  
+  def self.float_to_int26(value, factor)
+    int_val = 0
+
+    if value < 0 
+      int_val |= (0x1 << 25)
+    end
+
+    uint_val = Integer(value.abs * factor)
+
+    int_val = int_val | uint_val
+
+    return int_val
+  end
+  
+  @@base64_characters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-"]
+  
+  def self.int26_to_base64(value)
+    mask = 0x01 | 0x02 | 0x04 | 0x08 | 0x10 | 0x20
+    (0..4)
+      .map { |i|
+        cursor = Integer(i * 6)
+        rolling_mask = Integer(mask << cursor)
+        unshifted = value & rolling_mask
+        shifted = unshifted >> cursor
+        raw_char = shifted
+        char = @@base64_characters[raw_char]
+      }
+      .join
+      .reverse
+  end
+  
   def self.scoped
     self.all
   end
