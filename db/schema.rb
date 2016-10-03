@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161002003837) do
+ActiveRecord::Schema.define(version: 20161003210551) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -85,11 +85,13 @@ ActiveRecord::Schema.define(version: 20161002003837) do
     t.float    "start_alt"
     t.float    "end_alt"
     t.float    "percent_grade"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.datetime "created_at",               null: false
+    t.datetime "updated_at",               null: false
     t.string   "hecto_key"
+    t.string   "kilo_key",      limit: 10
   end
 
   add_index "road_segments", ["hecto_key"], name: "index_road_segments_on_hecto_key", using: :btree
+  add_index "road_segments", ["kilo_key"], name: "index_road_segments_on_kilo_key", using: :btree
 
 end

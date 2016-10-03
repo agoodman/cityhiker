@@ -13,10 +13,24 @@ class RoadSegment < ActiveRecord::Base
     return Math.haversine(start_lat, start_lng, end_lat, end_lng)
   end
   
+  def self.by_factor(factor=1000, key)
+    if factor == 1000
+      self.where(hecto_key: key)
+    elsif factor == 100
+      self.where(kilo_key: key)
+    end
+  end
+  
   def generate_hecto_key
     encoded_lat = RoadSegment.float_to_base64(start_lat, 1000)
     encoded_lng = RoadSegment.float_to_base64(start_lng, 1000)
     self.hecto_key = encoded_lat + encoded_lng
+  end
+
+  def generate_kilo_key
+    encoded_lat = RoadSegment.float_to_base64(start_lat, 100)
+    encoded_lng = RoadSegment.float_to_base64(start_lng, 100)
+    self.kilo_key = encoded_lat + encoded_lng
   end
 
   def as_base64

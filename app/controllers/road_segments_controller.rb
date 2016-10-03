@@ -4,26 +4,26 @@ class RoadSegmentsController < ApplicationController
   
   acts_as_service :road_segment
   
-  @@allowed_factors = [1000, 10000, 100000]
+  @@allowed_factors = [100, 1000, 10000, 100000]
   @@allowed_key_size = 10
   
   # required params:
-  #  factor: magnitude truncation factor; 1000 (default), 10000, or 100000
+  #  factor: magnitude truncation factor; 100, 1000 (default)
   #  hecto_key: a 10-char base64 string encoding lat/lng
   def hecto
     # extract factor from params, if valid; default otherwise
-    if params[:factor] && @@allowed_factors.include?(params[:factor])
-      factor = params[:factor]
+    if params[:factor] && @@allowed_factors.include?(params[:factor].to_i)
+      factor = params[:factor].to_i
     else
       factor = 1000
     end
     
     # extract key from params, if valid; return empty set otherwise
     if params[:hecto_key] && params[:hecto_key].length == @@allowed_key_size
-      hecto_key = params[:hecto_key]
+      key = params[:hecto_key]
 
-      @collection = Rails.cache.fetch("#{factor}/#{hecto_key}", expires_in: 12.hours) do
-        RoadSegment.where(hecto_key: hecto_key)
+      @collection = Rails.cache.fetch("#{factor}/#{key}", expires_in: 12.hours) do
+        RoadSegment.by_factor(factor, key)
       end
     else
       @collection = []
