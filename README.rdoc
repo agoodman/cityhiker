@@ -50,20 +50,19 @@ Returns a set of road segments in the bounding box [38.84,-122.42,38.85,-122.41]
 
 GET /road_segments/:factor/:key
 
-where
-
   factor is 1000, 10000, or 100000; representing a multiplier for lat/lng values; essentially, grid size
-
-  key is 10-byte string (30-bit base64 encoded) representation of the grid coordinates; details: https://cityhikerapp.com/2016/09/30/map-search-optimization/
+  key is 10-byte string (30-bit base64 encoded) representation of the grid coordinates
 
 Returns a set of road segments encoded in 30-bit base64, packed as follows:
 
-	lat0
-	lng0
-	alt0
-	lat1
-	lng1
-	alt1
-	grade
-	guid
+  lat0
+  lng0
+  alt0
+  lat1
+  lng1
+  alt1
+  grade
+  guid
+
+Encoding strategy details available on the CityHiker blog: https://cityhikerapp.com/2016/09/30/map-search-optimization/
 
