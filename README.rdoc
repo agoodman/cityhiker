@@ -14,10 +14,15 @@ Enjoy!
 === Differential
 
 GET /differential/search?start=lat,lng&end=lat,lng
-{"alt_delta": 7.890, "distance": 200.65}
 
-alt_delta - altitude difference in meters between the given coordinates
-distance - horizontal distance in meters between the given coordinates
+Returns: 
+  
+  {"alt_delta": 7.890, "distance": 200.65}
+
+Where:
+
+  alt_delta - altitude difference in meters between the given coordinates
+  distance - horizontal distance in meters between the given coordinates
 
 === Road Segments
 
