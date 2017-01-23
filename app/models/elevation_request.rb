@@ -43,6 +43,8 @@ class ElevationRequest < ActiveRecord::Base
             end_lng: p2['location']['lng'],
             end_alt: p2['elevation']
           )
+          seg.generate_hecto_key
+          seg.generate_kilo_key
           seg.calculate_grade
         end
         last_index = k2 + 1
