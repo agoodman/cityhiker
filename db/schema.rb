@@ -11,10 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161003210551) do
-
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+ActiveRecord::Schema.define(version: 20171030022414) do
 
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer  "priority",   default: 0, null: false
@@ -30,7 +27,7 @@ ActiveRecord::Schema.define(version: 20161003210551) do
     t.datetime "updated_at"
   end
 
-  add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority", using: :btree
+  add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
   create_table "elevation_request_segments", force: :cascade do |t|
     t.integer  "elevation_request_id"
@@ -56,7 +53,10 @@ ActiveRecord::Schema.define(version: 20161003210551) do
     t.time     "completed_at"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
+    t.integer  "sector_id"
   end
+
+  add_index "grid_requests", ["sector_id"], name: "index_grid_requests_on_sector_id"
 
   create_table "open_street_map_nodes", force: :cascade do |t|
     t.string   "ref"
@@ -66,7 +66,7 @@ ActiveRecord::Schema.define(version: 20161003210551) do
     t.datetime "updated_at", null: false
   end
 
-  add_index "open_street_map_nodes", ["ref"], name: "index_open_street_map_nodes_on_ref", using: :btree
+  add_index "open_street_map_nodes", ["ref"], name: "index_open_street_map_nodes_on_ref"
 
   create_table "open_street_map_ways", force: :cascade do |t|
     t.string   "ref"
@@ -75,7 +75,7 @@ ActiveRecord::Schema.define(version: 20161003210551) do
     t.datetime "updated_at", null: false
   end
 
-  add_index "open_street_map_ways", ["ref"], name: "index_open_street_map_ways_on_ref", using: :btree
+  add_index "open_street_map_ways", ["ref"], name: "index_open_street_map_ways_on_ref"
 
   create_table "road_segments", force: :cascade do |t|
     t.float    "start_lat"
@@ -87,11 +87,24 @@ ActiveRecord::Schema.define(version: 20161003210551) do
     t.float    "percent_grade"
     t.datetime "created_at",               null: false
     t.datetime "updated_at",               null: false
-    t.string   "hecto_key"
+    t.string   "hecto_key",     limit: 10
     t.string   "kilo_key",      limit: 10
   end
 
-  add_index "road_segments", ["hecto_key"], name: "index_road_segments_on_hecto_key", using: :btree
-  add_index "road_segments", ["kilo_key"], name: "index_road_segments_on_kilo_key", using: :btree
+  add_index "road_segments", ["hecto_key"], name: "index_road_segments_on_hecto_key"
+  add_index "road_segments", ["kilo_key"], name: "index_road_segments_on_kilo_key"
+
+  create_table "sectors", force: :cascade do |t|
+    t.integer  "scale_key"
+    t.string   "cell_key"
+    t.integer  "state"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "sectors", ["scale_key", "cell_key"], name: "index_sectors_on_scale_key_and_cell_key"
+  add_index "sectors", ["scale_key", "state"], name: "index_sectors_on_scale_key_and_state"
+  add_index "sectors", ["scale_key"], name: "index_sectors_on_scale_key"
+  add_index "sectors", ["state"], name: "index_sectors_on_state"
 
 end

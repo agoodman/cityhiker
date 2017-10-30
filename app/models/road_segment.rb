@@ -63,6 +63,27 @@ class RoadSegment < ActiveRecord::Base
     return int_val
   end
   
+  def self.int26_to_float(value, factor)
+    valueMask = 0x01FFFFFF
+    
+    uVal = value & valueMask
+    
+    iVal = Integer(uVal)
+    
+    fVal = iVal.to_f / factor.to_f
+    
+    if value & (0x1 << 25) != 0
+      fVal = -fVal
+    end
+    
+    return fVal
+  end
+  
+  def self.base64_to_float(value, factor)
+    iVal = base64_to_int26(value)
+    return int26_to_float(iVal, factor)
+  end
+  
   @@base64_characters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-"]
   
   def self.int26_to_base64(value)
@@ -78,6 +99,26 @@ class RoadSegment < ActiveRecord::Base
       }
       .join
       .reverse
+  end
+  
+  def self.base64_to_int26(value)
+    if value.length != 5
+      return 0
+    end
+    
+    result = 0
+    
+    (0..4)
+      .each { |i|
+        cursor = Integer(i * 6)
+        char = value[4-i]
+        index = @@base64_characters.index(char)
+        shiftedRawChar = index
+        unshiftedRawChar = shiftedRawChar << cursor
+        result |= unshiftedRawChar
+      }
+      
+    return result
   end
   
   def self.scoped

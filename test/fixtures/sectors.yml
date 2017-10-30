@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  scale_key: 1
+  cell_key: 1
+  state: 1
+
+two:
+  scale_key: 1
+  cell_key: 1
+  state: 1
