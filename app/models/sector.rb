@@ -19,7 +19,7 @@ class Sector < ActiveRecord::Base
   def generate_grid_request
     min_lat, min_lng, max_lat, max_lng = to_bounds
     request = GridRequest.find_or_create_by(min_lat: min_lat*1e5, min_lng: min_lng*1e5, max_lat: max_lat*1e5, max_lng: max_lng*1e5)
-    if request.new_record?
+    if request.sector_id.nil?
       request.sector_id = id
       request.save
     end
